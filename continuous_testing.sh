@@ -1,5 +1,5 @@
 #!/bin/ash
-set -e
+set +e
 
 UPLOAD_DIR="'s3://richardresults/test_stress'"
 LOCAL_DIR=$(echo \'$(pwd)\')
@@ -17,14 +17,15 @@ setup_testing() {
 
 run_apex_test() {
     echo "Running Ape-X Test"
-    cronwrap -c "source activate tensorflow_p36 && rllib train -f apex-stress-test.yaml > /dev/null" -e "rliaw@berkeley.edu, ekhliang@gmail.com"
+    cronwrap -c "bash -c 'source activate tensorflow_p36'" # && rllib train -f apex-stress-test.yaml'"# -e "rliaw@berkeley.edu, ekhliang@gmail.com"
 }
 
 cleanup_ray_session() {
     DATE="$(date '+%Y-%m-%d_%H-%M-%S')"
     local LOGDIR=ray-logs-$DATE
+    mkdir $LOGDIR || true
     pushd $LOGDIR
-      zip -r $LOGDIR.zip /tmp/ray/session-*
+      zip -r $LOGDIR.zip /tmp/ray/session_*
       aws s3 cp $LOGDIR.zip s3://richardresults/$LOGDIR/ray_logs.zip
     popd $LOGDIR
     rm -rf /tmp/ray/
